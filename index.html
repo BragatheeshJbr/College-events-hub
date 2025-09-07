@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEC Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <img src="logo.jpg" alt="VEC Logo" class="logo" />
+    <h1>VEC Dashboard</h1>
+  </header>
+
+  <!-- Welcome Info Box -->
+  <div class="welcome-box" id="welcomeBox">
+    <button class="close-btn" onclick="document.getElementById('welcomeBox').style.display='none'">×</button>
+    <p>
+      This dashboard helps you to view 
+      <strong>External Events List</strong>, 
+      <strong>Past Winners</strong> from our college students, 
+      and <strong>Value Added Course List</strong>.
+    </p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <nav class="tabs">
+    <button class="tab-button active" data-target="events-tab" data-sheet="Events">Events</button>
+    <button class="tab-button" data-target="courses-tab" data-sheet="Courses">Courses</button>
+    <button class="tab-button" data-target="winners-tab" data-sheet="Winners">Winners</button>
+  </nav>
+
+  <!-- Tab Contents -->
+  <main class="tab-container">
+    <section id="events-tab" class="tab-content" style="display:block;"></section>
+    <section id="courses-tab" class="tab-content" style="display:none;"></section>
+    
+    <!-- Winners Tab -->
+    <section id="winners-tab" class="tab-content" style="display:none;">
+      <!-- Leaderboard section -->
+      <div id="leaderboard" class="leaderboard-box"></div>
+
+      <!-- Winners list will appear here (cards rendered dynamically) -->
+      <div id="winners-list"></div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    © 2025 VEC Dashboard | All Rights Reserved
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
