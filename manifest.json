@@ -1,21 +1,22 @@
 {
   "name": "VEC Dashboard",
   "short_name": "VEC",
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#800000",
-  "orientation": "portrait",
+  "theme_color": "#003366",
+  "description": "VEC Dashboard to view Events, Winners, and Courses",
   "icons": [
     {
-      "src": "logo-192.png",
+      "src": "logo.jpg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg"
     },
     {
-      "src": "logo-512.png",
+      "src": "logo.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
+
