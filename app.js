@@ -126,7 +126,7 @@ function renderData(data, sheetName) {
   }
 }
 
-// 🧮 Leaderboard calculation (with fair tie handling)
+// 🧮 Fair Leaderboard Calculation (handles ties properly)
 function calculateLeaderboard(winnersData) {
   const rankWeight = { "I": 3, "II": 2, "III": 1 }; // higher = better
   const table = {};
@@ -149,27 +149,33 @@ function calculateLeaderboard(winnersData) {
     }
   });
 
-  const leaderboard = Object.entries(table)
+  // Convert to array
+  const sorted = Object.entries(table)
     .map(([name, data]) => ({ name, count: data.count, best: data.best }))
     .sort((a, b) => {
-      if (b.count === a.count) return b.best - a.best; // tie → best rank wins
+      if (b.count === a.count) return b.best - a.best;
       return b.count - a.count;
     });
 
-  // 🟢 Fair Logic for Ties:
-  // Take top 3, but include everyone who ties with 3rd place
-  if (leaderboard.length > 3) {
-    const thirdPlace = leaderboard[2];
-    return leaderboard.filter(player =>
-      player.count > thirdPlace.count ||
-      (player.count === thirdPlace.count && player.best >= thirdPlace.best)
-    );
+  // Include ties fairly
+  const finalLeaderboard = [];
+  let lastCount = null, lastBest = null;
+
+  for (const player of sorted) {
+    if (finalLeaderboard.length < 3 ||
+        (player.count === lastCount && player.best === lastBest)) {
+      finalLeaderboard.push(player);
+      lastCount = player.count;
+      lastBest = player.best;
+    } else {
+      break;
+    }
   }
 
-  return leaderboard;
+  return finalLeaderboard;
 }
 
-// Render leaderboard
+// 🏆 Render leaderboard (with shared medals for ties)
 function renderLeaderboard(leaderboard) {
   const container = document.getElementById("leaderboard");
   if (!container) return;
@@ -179,26 +185,39 @@ function renderLeaderboard(leaderboard) {
     return;
   }
 
-  let medals = ["🥇", "🥈", "🥉"];
-  let rankMap = { 3: "I", 2: "II", 1: "III" };
+  const rankMap = { 3: "I", 2: "II", 1: "III" };
+  const medalMap = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
-  container.innerHTML = `
-    <h3 class="text-xl font-bold mb-2">🏆 VEC Champions Leaderboard</h3>
-    <ul class="space-y-2">
-      ${leaderboard.map((player, i) => `
-        <li class="flex justify-between bg-gray-100 p-2 rounded-lg shadow">
-          <span>${medals[i] || ""} ${player.name}</span>
-          <span class="font-semibold">
-            ${player.count} ${player.count === 1 ? "win" : "wins"} 
-            (Best: ${rankMap[player.best] || "-"} Place)
-          </span>
-        </li>
-      `).join("")}
-    </ul>
-  `;
+  let html = `<h3 class="text-xl font-bold mb-2">🏆 VEC Champions Leaderboard</h3><ul class="space-y-2">`;
+
+  let currentRank = 1;
+  for (let i = 0; i < leaderboard.length; i++) {
+    const player = leaderboard[i];
+    const prev = leaderboard[i - 1];
+
+    // Check if tied with previous
+    if (i > 0 && player.count === prev.count && player.best === prev.best) {
+      // same medal and rank
+    } else if (i > 0) {
+      currentRank++;
+    }
+
+    const medal = medalMap[currentRank] || "";
+    html += `
+      <li class="flex justify-between bg-gray-100 p-2 rounded-lg shadow">
+        <span>${medal} ${player.name}</span>
+        <span class="font-semibold">
+          ${player.count} ${player.count === 1 ? "win" : "wins"} 
+          (Best: ${rankMap[player.best] || "-"} Place)
+        </span>
+      </li>`;
+  }
+
+  html += `</ul>`;
+  container.innerHTML = html;
 }
 
-// Render winners list cards
+// 🏅 Render winners list cards
 function renderWinnerCards(data) {
   const container = document.getElementById("winners-list");
   if (!container) return;
@@ -220,7 +239,7 @@ function renderWinnerCards(data) {
   container.innerHTML = `<div class="card-container">${html}</div>`;
 }
 
-// Service Worker Registration
+// 🧩 Service Worker Registration
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
     .then(reg => console.log("✅ Service Worker registered:", reg))
