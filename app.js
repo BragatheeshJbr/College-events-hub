@@ -126,7 +126,7 @@ function renderData(data, sheetName) {
   }
 }
 
-// Leaderboard calculation (wins + best rank)
+// 🧮 Leaderboard calculation (with fair tie handling)
 function calculateLeaderboard(winnersData) {
   const rankWeight = { "I": 3, "II": 2, "III": 1 }; // higher = better
   const table = {};
@@ -149,13 +149,24 @@ function calculateLeaderboard(winnersData) {
     }
   });
 
-  return Object.entries(table)
+  const leaderboard = Object.entries(table)
     .map(([name, data]) => ({ name, count: data.count, best: data.best }))
     .sort((a, b) => {
       if (b.count === a.count) return b.best - a.best; // tie → best rank wins
       return b.count - a.count;
-    })
-    .slice(0, 3);
+    });
+
+  // 🟢 Fair Logic for Ties:
+  // Take top 3, but include everyone who ties with 3rd place
+  if (leaderboard.length > 3) {
+    const thirdPlace = leaderboard[2];
+    return leaderboard.filter(player =>
+      player.count > thirdPlace.count ||
+      (player.count === thirdPlace.count && player.best >= thirdPlace.best)
+    );
+  }
+
+  return leaderboard;
 }
 
 // Render leaderboard
@@ -207,11 +218,11 @@ function renderWinnerCards(data) {
   }).join('');
 
   container.innerHTML = `<div class="card-container">${html}</div>`;
+}
 
 // Service Worker Registration
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
     .then(reg => console.log("✅ Service Worker registered:", reg))
     .catch(err => console.error("❌ Service Worker registration failed:", err));
-}
 }
