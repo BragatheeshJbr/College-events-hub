@@ -6,7 +6,78 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// 🧭 Tab switching logic
+/* ---------new Minimal localStorage cache (stale-while-revalidate) ---------- */
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (tweakable)
+function cacheKey(sheet) { return `vec_cache_${sheet}`; }
+
+function saveLocal(sheet, data) {
+  try { localStorage.setItem(cacheKey(sheet), JSON.stringify({ ts: Date.now(), data })); }
+  catch(e){ console.warn('saveLocal failed', e); }
+}
+function loadLocal(sheet) {
+  try {
+    const raw = localStorage.getItem(cacheKey(sheet));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    return obj;
+  } catch(e){ return null; }
+}
+
+async function getAndCache(sheetName) {
+  // return cached if fresh, else fetch network and update
+  const local = loadLocal(sheetName);
+  if (local && (Date.now() - local.ts) < CACHE_TTL_MS) {
+    // return immediately the cached data
+    return local.data;
+  }
+  // else fetch network and update cache
+  const resp = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`);
+  const data = await resp.json();
+  saveLocal(sheetName, data);
+  return data;
+}
+
+/* Replace your existing DOMContentLoaded initial call with this: */
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1) Render from localStorage immediately if present
+  const local = loadLocal('Events');
+  if (local && local.data) {
+    cache['Events'] = local.data;           // populate your in-memory cache
+    renderData(local.data, 'Events');      // render instantly
+  } else {
+    // show loading UI while network fetch proceeds
+    document.getElementById('events-tab').innerHTML = '<p class="loading-text">Loading...</p>';
+  }
+
+  // 2) Always fetch fresh in background and update if changed
+  try {
+    const fresh = await fetch(`${SCRIPT_URL}?sheet=Events`);
+    const freshData = await fresh.json();
+    // update only if different (simple JSON compare)
+    if (JSON.stringify(freshData) !== JSON.stringify(cache['Events'])) {
+      cache['Events'] = freshData;
+      saveLocal('Events', freshData);
+      renderData(freshData, 'Events');
+    } else {
+      // still refresh timestamp
+      saveLocal('Events', freshData);
+    }
+  } catch (e) {
+    console.warn('Background refresh failed', e);
+  }
+
+  // Start preloading other sheets in background (non-blocking)
+  setTimeout(() => {
+    ['Courses','Winners'].forEach(s => {
+      fetch(`${SCRIPT_URL}?sheet=${s}`)
+        .then(r => r.json())
+        .then(d => { cache[s] = d; saveLocal(s,d); })
+        .catch(()=>{});
+    });
+  }, 200);
+});
+
+// until this 🧭 Tab switching logic
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
