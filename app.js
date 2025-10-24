@@ -6,78 +6,62 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/* ---------new Minimal localStorage cache (stale-while-revalidate) ---------- */
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (tweakable)
+/* --------- 🚀 Minimal localStorage cache (stale-while-revalidate) ---------- */
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
+
 function cacheKey(sheet) { return `vec_cache_${sheet}`; }
 
 function saveLocal(sheet, data) {
-  try { localStorage.setItem(cacheKey(sheet), JSON.stringify({ ts: Date.now(), data })); }
-  catch(e){ console.warn('saveLocal failed', e); }
+  try {
+    localStorage.setItem(cacheKey(sheet), JSON.stringify({ ts: Date.now(), data }));
+  } catch (e) { console.warn('saveLocal failed', e); }
 }
+
 function loadLocal(sheet) {
   try {
     const raw = localStorage.getItem(cacheKey(sheet));
     if (!raw) return null;
-    const obj = JSON.parse(raw);
-    return obj;
-  } catch(e){ return null; }
+    return JSON.parse(raw);
+  } catch (e) { return null; }
 }
 
+/* --------- ⚡ Fetch & Cache Logic ---------- */
 async function getAndCache(sheetName) {
-  // return cached if fresh, else fetch network and update
   const local = loadLocal(sheetName);
-  if (local && (Date.now() - local.ts) < CACHE_TTL_MS) {
-    // return immediately the cached data
-    return local.data;
-  }
-  // else fetch network and update cache
-  const resp = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`);
+  if (local && (Date.now() - local.ts) < CACHE_TTL_MS) return local.data;
+
+  const resp = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`, { cache: 'no-store' });
   const data = await resp.json();
   saveLocal(sheetName, data);
   return data;
 }
 
-/* Replace your existing DOMContentLoaded initial call with this: */
+/* --------- 🚀 Faster Startup: Render Cached Immediately ---------- */
 window.addEventListener('DOMContentLoaded', async () => {
-  // 1) Render from localStorage immediately if present
   const local = loadLocal('Events');
-  if (local && local.data) {
-    cache['Events'] = local.data;           // populate your in-memory cache
-    renderData(local.data, 'Events');      // render instantly
+  if (local?.data) {
+    cache['Events'] = local.data;
+    renderData(local.data, 'Events');
   } else {
-    // show loading UI while network fetch proceeds
     document.getElementById('events-tab').innerHTML = '<p class="loading-text">Loading...</p>';
   }
 
-  // 2) Always fetch fresh in background and update if changed
-  try {
-    const fresh = await fetch(`${SCRIPT_URL}?sheet=Events`);
-    const freshData = await fresh.json();
-    // update only if different (simple JSON compare)
-    if (JSON.stringify(freshData) !== JSON.stringify(cache['Events'])) {
-      cache['Events'] = freshData;
-      saveLocal('Events', freshData);
-      renderData(freshData, 'Events');
-    } else {
-      // still refresh timestamp
-      saveLocal('Events', freshData);
+  // Fetch fresh data in background (non-blocking)
+  getAndCache('Events').then(fresh => {
+    if (JSON.stringify(fresh) !== JSON.stringify(cache['Events'])) {
+      cache['Events'] = fresh;
+      renderData(fresh, 'Events');
     }
-  } catch (e) {
-    console.warn('Background refresh failed', e);
-  }
+    saveLocal('Events', fresh);
+  });
 
-  // Start preloading other sheets in background (non-blocking)
-  setTimeout(() => {
-    ['Courses','Winners'].forEach(s => {
-      fetch(`${SCRIPT_URL}?sheet=${s}`)
-        .then(r => r.json())
-        .then(d => { cache[s] = d; saveLocal(s,d); })
-        .catch(()=>{});
-    });
-  }, 200);
+  // Preload other sheets after a small delay (non-blocking)
+  setTimeout(() => ['Courses', 'Winners'].forEach(s =>
+    getAndCache(s).then(d => cache[s] = d).catch(() => {})
+  ), 200);
 });
 
-// until this 🧭 Tab switching logic
+/* --------- 🧭 Tab Switching ---------- */
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -99,17 +83,17 @@ tabs.forEach(tab => {
   });
 });
 
-// 🏁 Load default tab (Events) on startup
+// 🏁 Default tab on startup
 window.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
   document.getElementById('events-tab').style.display = 'block';
   loadTabData('Events', 'events-tab');
 });
 
-// ⚡ Data cache for performance
+/* --------- ⚡ Data Cache for Performance ---------- */
 const cache = {};
 
-// 📦 Load data dynamically
+/* --------- 📦 Load Data Dynamically ---------- */
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
 
@@ -125,24 +109,18 @@ async function loadTabData(sheetName, containerId) {
       renderData(cache[sheetName], sheetName);
       return;
     }
-
-    const response = await fetch(`${SCRIPT_URL}?sheet=${sheetName}`);
-    const data = await response.json();
+    const data = await getAndCache(sheetName);
     cache[sheetName] = data;
-
     renderData(data, sheetName);
   } catch (error) {
     console.error(error);
     const msg = '<p class="error-text">Failed to load data.</p>';
-    if (sheetName === "Winners") {
-      document.getElementById("leaderboard").innerHTML = msg;
-    } else {
-      container.innerHTML = msg;
-    }
+    if (sheetName === "Winners") document.getElementById("leaderboard").innerHTML = msg;
+    else container.innerHTML = msg;
   }
 }
 
-// 🎨 Render data for each tab
+/* --------- 🎨 Render Data ---------- */
 function renderData(data, sheetName) {
   if (!data || data.length === 0) {
     const msg = '<p class="empty-text">No data available.</p>';
@@ -170,14 +148,12 @@ function renderData(data, sheetName) {
           return `
             <div class="card-field">
               <span class="card-key">${formattedKey}</span>
-              <span class="card-colon">:</span>
               <span class="card-value"><a href="${value}" target="_blank">${value}</a></span>
             </div>`;
         }
         return `
           <div class="card-field">
             <span class="card-key">${formattedKey}</span>
-            <span class="card-colon">:</span>
             <span class="card-value">${value}</span>
           </div>`;
       }).join('');
@@ -188,7 +164,7 @@ function renderData(data, sheetName) {
   }
 }
 
-// 🧮 Improved Leaderboard Calculation (handles ties properly)
+/* --------- 🧮 Leaderboard Calculation (Handles Ties) ---------- */
 function calculateLeaderboard(winnersData) {
   const rankWeight = { "I": 3, "II": 2, "III": 1 };
   const table = {};
@@ -199,42 +175,33 @@ function calculateLeaderboard(winnersData) {
 
     if (names && pos) {
       names.forEach(name => {
-        if (!table[name]) {
-          table[name] = { count: 0, best: 0 };
-        }
+        if (!table[name]) table[name] = { count: 0, best: 0 };
         table[name].count += 1;
         const weight = rankWeight[pos] || 0;
-        if (weight > table[name].best) {
-          table[name].best = weight;
-        }
+        if (weight > table[name].best) table[name].best = weight;
       });
     }
   });
 
   const sorted = Object.entries(table)
     .map(([name, data]) => ({ name, count: data.count, best: data.best }))
-    .sort((a, b) => {
-      if (b.count === a.count) return b.best - a.best;
-      return b.count - a.count;
-    });
+    .sort((a, b) => (b.count === a.count ? b.best - a.best : b.count - a.count));
 
-  // Handle fair ties
+  // Fair ties
   const finalLeaderboard = [];
   let lastCount = null, lastBest = null;
 
   for (const player of sorted) {
-    if (finalLeaderboard.length < 3 ||
-        (player.count === lastCount && player.best === lastBest)) {
+    if (finalLeaderboard.length < 3 || (player.count === lastCount && player.best === lastBest)) {
       finalLeaderboard.push(player);
       lastCount = player.count;
       lastBest = player.best;
     } else break;
   }
-
   return finalLeaderboard;
 }
 
-// 🏆 Render leaderboard with medals and tie handling
+/* --------- 🏆 Render Leaderboard ---------- */
 function renderLeaderboard(leaderboard) {
   const container = document.getElementById("leaderboard");
   if (!container) return;
@@ -244,9 +211,7 @@ function renderLeaderboard(leaderboard) {
     return;
   }
 
-  const rankMap = { 3: "I", 2: "II", 1: "III" };
   const medalMap = { 1: "🥇", 2: "🥈", 3: "🥉" };
-
   let html = `<h3 class="text-xl font-bold mb-2">🏆 VEC Champions Leaderboard</h3><ul class="space-y-2">`;
 
   let currentRank = 1;
@@ -255,10 +220,8 @@ function renderLeaderboard(leaderboard) {
     const prev = leaderboard[i - 1];
 
     if (i > 0 && player.count === prev.count && player.best === prev.best) {
-      // same rank (tie)
-    } else if (i > 0) {
-      currentRank++;
-    }
+      // Tie → same rank
+    } else if (i > 0) currentRank++;
 
     const medal = medalMap[currentRank] || "";
     html += `
@@ -266,7 +229,7 @@ function renderLeaderboard(leaderboard) {
         <span>${medal} ${player.name}</span>
         <span class="font-semibold">
           ${player.count} ${player.count === 1 ? "win" : "wins"} 
-          (Best: ${rankMap[player.best] || "-"} Place)
+          (Best: ${player.best === 3 ? "I" : player.best === 2 ? "II" : "III"} Place)
         </span>
       </li>`;
   }
@@ -275,7 +238,7 @@ function renderLeaderboard(leaderboard) {
   container.innerHTML = html;
 }
 
-// 🏅 Render Winner Cards
+/* --------- 🏅 Render Winner Cards ---------- */
 function renderWinnerCards(data) {
   const container = document.getElementById("winners-list");
   if (!container) return;
@@ -286,7 +249,6 @@ function renderWinnerCards(data) {
       return `
         <div class="card-field">
           <span class="card-key">${formattedKey}</span>
-          <span class="card-colon">:</span>
           <span class="card-value">${value}</span>
         </div>`;
     }).join('');
@@ -296,7 +258,7 @@ function renderWinnerCards(data) {
   container.innerHTML = `<div class="card-container">${html}</div>`;
 }
 
-// ⚙️ Service Worker Registration
+/* --------- ⚙️ Service Worker (Offline Cache) ---------- */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
     .then(reg => console.log("✅ Service Worker registered:", reg))
