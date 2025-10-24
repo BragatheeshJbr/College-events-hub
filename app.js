@@ -6,28 +6,6 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// 🌀 Add a global loader element
-const loader = document.createElement("div");
-loader.id = "global-loader";
-loader.innerHTML = `
-  <div class="loader-container">
-    <div class="spinner"></div>
-    <p>Loading data...</p>
-  </div>
-`;
-document.body.appendChild(loader);
-
-// 💫 Loader control functions
-function showLoader() {
-  loader.style.display = "flex";
-  loader.style.opacity = "1";
-}
-
-function hideLoader() {
-  loader.style.opacity = "0";
-  setTimeout(() => (loader.style.display = "none"), 500);
-}
-
 //  🧭 Tab switching logic
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -38,16 +16,11 @@ tabs.forEach(tab => {
     const sheet = tab.dataset.sheet;
 
     // Hide all tabs
-    tabContents.forEach(tc => {
-      tc.classList.remove('active');
-      tc.style.display = 'none';
-    });
+    tabContents.forEach(tc => tc.style.display = 'none');
     tabs.forEach(t => t.classList.remove('active'));
 
-    // Show active tab with animation
-    const activeTab = document.getElementById(target);
-    activeTab.style.display = 'block';
-    setTimeout(() => activeTab.classList.add('active'), 50);
+    // Show active tab
+    document.getElementById(target).style.display = 'block';
     tab.classList.add('active');
 
     // Load data for the selected tab
@@ -55,12 +28,11 @@ tabs.forEach(tab => {
   });
 });
 
-// 🏁 Load default tab (Events) on startup instantly
+// 🏁 Load default tab (Events) on startup
 window.addEventListener('DOMContentLoaded', () => {
-  const defaultTab = document.querySelector('.tab-button[data-sheet="Events"]');
-  if (defaultTab) {
-    defaultTab.click();
-  }
+  document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
+  document.getElementById('events-tab').style.display = 'block';
+  loadTabData('Events', 'events-tab');
 });
 
 // ⚡ Data cache for performance
@@ -69,8 +41,6 @@ const cache = {};
 // 📦 Load data dynamically
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
-
-  showLoader(); // show loader before loading
 
   if (sheetName === "Winners") {
     document.getElementById("leaderboard").innerHTML = '<p class="loading-text">Loading...</p>';
@@ -82,7 +52,6 @@ async function loadTabData(sheetName, containerId) {
   try {
     if (cache[sheetName]) {
       renderData(cache[sheetName], sheetName);
-      hideLoader();
       return;
     }
 
@@ -91,7 +60,6 @@ async function loadTabData(sheetName, containerId) {
     cache[sheetName] = data;
 
     renderData(data, sheetName);
-    hideLoader();
   } catch (error) {
     console.error(error);
     const msg = '<p class="error-text">Failed to load data.</p>';
@@ -100,7 +68,6 @@ async function loadTabData(sheetName, containerId) {
     } else {
       container.innerHTML = msg;
     }
-    hideLoader();
   }
 }
 

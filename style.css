@@ -158,35 +158,36 @@ body {
   word-break: break-word;
 }
 
-/* ⚡ Enhanced Loader */
-.loader {
+/* 🌐 Centered Loading Spinner */
+.loader-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 180px;
+  height: 60vh;
   text-align: center;
+  color: #222;
+  font-size: 18px;
 }
 
-.loader .spinner {
-  width: 45px;
-  height: 45px;
-  border: 5px solid #ccc;
-  border-top: 5px solid #1f3b4d;
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #1f3b4d;
   border-radius: 50%;
+  width: 50px;
+  height: 50px;
   animation: spin 1s linear infinite;
   margin-bottom: 12px;
 }
 
-.loader p {
-  color: #000;
-  font-size: 16px;
-  font-weight: bold;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.loading-text {
+  font-weight: 600;
+  color: #1f3b4d;
 }
 
 /* 🏆 Leaderboard Styling */
@@ -271,24 +272,12 @@ body {
   background: #c0392b;
 }
 
-/* 📱 Responsive adjustments */
+/* 📱 Responsive */
 @media (max-width: 600px) {
-  .app-header h1 {
-    font-size: 22px;
-  }
-
-  .app-header .logo {
-    height: 30px;
-  }
-
-  .tab-button {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  .card {
-    padding: 12px;
-  }
+  .app-header h1 { font-size: 22px; }
+  .app-header .logo { height: 30px; }
+  .tab-button { font-size: 14px; padding: 10px; }
+  .card { padding: 12px; }
 }
 
 /* 🦶 Footer */
