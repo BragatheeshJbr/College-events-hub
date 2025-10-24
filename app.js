@@ -6,6 +6,28 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// 🌀 Add a global loader element
+const loader = document.createElement("div");
+loader.id = "global-loader";
+loader.innerHTML = `
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p>Loading data...</p>
+  </div>
+`;
+document.body.appendChild(loader);
+
+// 💫 Loader control functions
+function showLoader() {
+  loader.style.display = "flex";
+  loader.style.opacity = "1";
+}
+
+function hideLoader() {
+  loader.style.opacity = "0";
+  setTimeout(() => (loader.style.display = "none"), 500);
+}
+
 //  🧭 Tab switching logic
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -33,11 +55,12 @@ tabs.forEach(tab => {
   });
 });
 
-// 🏁 Load default tab (Events) on startup
+// 🏁 Load default tab (Events) on startup instantly
 window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
-  document.getElementById('events-tab').style.display = 'block';
-  loadTabData('Events', 'events-tab');
+  const defaultTab = document.querySelector('.tab-button[data-sheet="Events"]');
+  if (defaultTab) {
+    defaultTab.click();
+  }
 });
 
 // ⚡ Data cache for performance
@@ -46,6 +69,8 @@ const cache = {};
 // 📦 Load data dynamically
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
+
+  showLoader(); // show loader before loading
 
   if (sheetName === "Winners") {
     document.getElementById("leaderboard").innerHTML = '<p class="loading-text">Loading...</p>';
@@ -57,6 +82,7 @@ async function loadTabData(sheetName, containerId) {
   try {
     if (cache[sheetName]) {
       renderData(cache[sheetName], sheetName);
+      hideLoader();
       return;
     }
 
@@ -65,6 +91,7 @@ async function loadTabData(sheetName, containerId) {
     cache[sheetName] = data;
 
     renderData(data, sheetName);
+    hideLoader();
   } catch (error) {
     console.error(error);
     const msg = '<p class="error-text">Failed to load data.</p>';
@@ -73,6 +100,7 @@ async function loadTabData(sheetName, containerId) {
     } else {
       container.innerHTML = msg;
     }
+    hideLoader();
   }
 }
 

@@ -158,18 +158,35 @@ body {
   word-break: break-word;
 }
 
-/* ⚡ Loading shimmer animation */
-.loading-text {
-  background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
+/* ⚡ Enhanced Loader */
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  text-align: center;
 }
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+
+.loader .spinner {
+  width: 45px;
+  height: 45px;
+  border: 5px solid #ccc;
+  border-top: 5px solid #1f3b4d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+.loader p {
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 🏆 Leaderboard Styling */
@@ -230,7 +247,7 @@ body {
   color: #1f3b4d;
 }
 
-/* ❌ Close button (red circle) */
+/* ❌ Close button */
 .welcome-box .close-btn {
   position: absolute;
   top: 8px;
