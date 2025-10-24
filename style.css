@@ -1,18 +1,23 @@
-/* General Reset */
+/* 🌍 General Reset */
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, sans-serif;
   background: #f4f6f8;
   color: #333;
+  opacity: 0;
+  animation: fadeInBody 0.8s ease forwards;
+}
+@keyframes fadeInBody {
+  to { opacity: 1; }
 }
 
-/* Header */
+/* 🧭 Header */
 .app-header {
   background: #1f3b4d;
   color: white;
   display: flex;
   align-items: center;
-  justify-content: center; /* Center title */
+  justify-content: center;
   padding: 12px 20px;
   position: relative;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -28,24 +33,24 @@ body {
 .app-header h1 {
   font-size: 28px;
   margin: 0;
-  font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif; /* Attractive font */
+  font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif;
   font-weight: 700;
   letter-spacing: 1px;
   color: #ffffff;
 }
 
-/* Tabs Navigation */
+/* 🗂 Tabs Navigation */
 .tabs {
   display: flex;
   justify-content: center;
   background: #ffffff;
   border-bottom: 1px solid #ddd;
-  overflow-x: auto; /* Scrollable on small screens */
+  overflow-x: auto;
 }
 
 .tab-button {
   flex: 1;
-  min-width: 100px; /* Prevent squished buttons on mobile */
+  min-width: 100px;
   padding: 12px;
   border: none;
   background: #f4f6f8;
@@ -64,23 +69,46 @@ body {
   font-weight: bold;
 }
 
-/* Tab Content */
+/* 📦 Tab Content */
 .tab-container {
   padding: 20px;
-  padding-bottom: 80px; /* Extra space for footer on mobile */
+  padding-bottom: 80px;
 }
 
 .tab-content {
   display: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
 }
 
-/* Card Styling */
+.tab-content.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 🃏 Card Styling */
 .card {
   background: white;
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 15px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeInCard 0.4s ease forwards;
+}
+
+@keyframes fadeInCard {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card h3 {
@@ -107,21 +135,126 @@ body {
   margin-top: 10px;
 }
 
-/* Footer */
-.app-footer {
-  background: #1f3b4d;
-  color: white;
-  text-align: center;
-  padding: 12px 20px;
-  font-size: 14px;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
-  position: fixed;
-  width: 100%;
-  bottom: 0;
-  z-index: 1000;
+/* 📑 Card fields layout */
+.card-field {
+  display: flex;
+  align-items: flex-start;
+  margin: 6px 0;
 }
 
-/* Responsive adjustments */
+.card-key {
+  font-weight: bold;
+  min-width: 160px;
+  color: #1f3b4d;
+}
+
+.card-colon {
+  margin: 0 6px;
+  font-weight: bold;
+}
+
+.card-value {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* ⚡ Loading shimmer animation */
+.loading-text {
+  background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 🏆 Leaderboard Styling */
+.leaderboard-box {
+  background: #f0f7ff;
+  padding: 15px;
+  margin: 20px auto;
+  border-radius: 10px;
+  max-width: 500px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-box h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #222;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.leaderboard-box ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leaderboard-box li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #fff;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  animation: slideInUp 0.4s ease forwards;
+}
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 💬 Welcome / Info Box */
+.welcome-box {
+  position: relative;
+  background: #eaf4ff;
+  border-left: 6px solid #1f3b4d;
+  color: #333;
+  padding: 12px 16px;
+  margin: 15px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.welcome-box strong {
+  color: #1f3b4d;
+}
+
+/* ❌ Close button (red circle) */
+.welcome-box .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: #e74c3c;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.welcome-box .close-btn:hover {
+  background: #c0392b;
+}
+
+/* 📱 Responsive adjustments */
 @media (max-width: 600px) {
   .app-header h1 {
     font-size: 22px;
@@ -141,106 +274,16 @@ body {
   }
 }
 
-/* Welcome / Info Box */
-.welcome-box {
-  position: relative;
-  background: #eaf4ff;
-  border-left: 6px solid #1f3b4d;
-  color: #333;
-  padding: 12px 16px;
-  margin: 15px;
-  border-radius: 8px;
-  font-size: 15px;
-  line-height: 1.5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.welcome-box strong {
-  color: #1f3b4d;
-}
-
-/* Close button (red circle) */
-.welcome-box .close-btn {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  background: #e74c3c;   /* red background */
-  border: none;
-  border-radius: 50%;    /* makes it circular */
-  width: 22px;
-  height: 22px;
-  font-size: 14px;
-  color: #fff;           /* white X */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  transition: background 0.2s;
-}
-
-.welcome-box .close-btn:hover {
-  background: #c0392b;   /* darker red on hover */
-}
-
-/* Card fields layout */
-.card-field {
-  display: flex;
-  align-items: flex-start;
-  margin: 6px 0;
-}
-
-.card-key {
-  font-weight: bold;
-  min-width: 160px;   /* ensures all labels align */
-  color: #1f3b4d;
-}
-
-.card-colon {
-  margin: 0 6px;
-  font-weight: bold;
-}
-
-.card-value {
-  flex: 1;
-  word-break: break-word;
-}
-
-/* Leaderboard box styling */
-.leaderboard-box {
-  background: #f0f7ff;
-  padding: 15px;
-  margin: 20px auto;
-  border-radius: 10px;
-  max-width: 500px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Leaderboard heading */
-.leaderboard-box h2 {
+/* 🦶 Footer */
+.app-footer {
+  background: #1f3b4d;
+  color: white;
   text-align: center;
-  margin-bottom: 15px;
-  color: #222;
-  font-size: 22px;
-  font-weight: bold;
-  text-decoration: none;
-  border: none;
-}
-
-/* Remove unwanted lines */
-.leaderboard-box ul {
-  list-style: none;   /* removes bullets */
-  margin: 0;
-  padding: 0;
-  border: none;       /* removes line */
-}
-
-.leaderboard-box li {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: #fff;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  z-index: 1000;
 }
