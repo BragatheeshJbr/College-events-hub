@@ -16,11 +16,16 @@ tabs.forEach(tab => {
     const sheet = tab.dataset.sheet;
 
     // Hide all tabs
-    tabContents.forEach(tc => tc.style.display = 'none');
+    tabContents.forEach(tc => {
+      tc.classList.remove('active');
+      tc.style.display = 'none';
+    });
     tabs.forEach(t => t.classList.remove('active'));
 
-    // Show active tab
-    document.getElementById(target).style.display = 'block';
+    // Show active tab with animation
+    const activeTab = document.getElementById(target);
+    activeTab.style.display = 'block';
+    setTimeout(() => activeTab.classList.add('active'), 50);
     tab.classList.add('active');
 
     // Load data for the selected tab
