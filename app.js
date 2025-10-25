@@ -6,7 +6,29 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-//  🧭 Tab switching logic
+// 🌀 Add a global loader element with animation
+const loader = document.createElement("div");
+loader.id = "global-loader";
+loader.innerHTML = `
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p>Loading data...</p>
+  </div>
+`;
+document.body.appendChild(loader);
+
+// 💫 Loader control functions with fade animation
+function showLoader() {
+  loader.style.display = "flex";
+  loader.style.opacity = "1";
+}
+
+function hideLoader() {
+  loader.style.opacity = "0";
+  setTimeout(() => (loader.style.display = "none"), 500);
+}
+
+//  🧭 Tab switching logic with animated transition
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -18,14 +40,18 @@ tabs.forEach(tab => {
     // Hide all tabs
     tabContents.forEach(tc => {
       tc.classList.remove('active');
-      tc.style.display = 'none';
+      tc.style.opacity = '0';
+      setTimeout(() => (tc.style.display = 'none'), 300);
     });
     tabs.forEach(t => t.classList.remove('active'));
 
-    // Show active tab with animation
+    // Show active tab with fade-in animation
     const activeTab = document.getElementById(target);
     activeTab.style.display = 'block';
-    setTimeout(() => activeTab.classList.add('active'), 50);
+    setTimeout(() => {
+      activeTab.classList.add('active');
+      activeTab.style.opacity = '1';
+    }, 100);
     tab.classList.add('active');
 
     // Load data for the selected tab
@@ -35,9 +61,10 @@ tabs.forEach(tab => {
 
 // 🏁 Load default tab (Events) on startup
 window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
-  document.getElementById('events-tab').style.display = 'block';
-  loadTabData('Events', 'events-tab');
+  const defaultTab = document.querySelector('.tab-button[data-sheet="Events"]');
+  if (defaultTab) {
+    defaultTab.click();
+  }
 });
 
 // ⚡ Data cache for performance
@@ -46,6 +73,7 @@ const cache = {};
 // 📦 Load data dynamically
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
+  showLoader();
 
   if (sheetName === "Winners") {
     document.getElementById("leaderboard").innerHTML = '<p class="loading-text">Loading...</p>';
@@ -57,6 +85,7 @@ async function loadTabData(sheetName, containerId) {
   try {
     if (cache[sheetName]) {
       renderData(cache[sheetName], sheetName);
+      hideLoader();
       return;
     }
 
@@ -65,6 +94,7 @@ async function loadTabData(sheetName, containerId) {
     cache[sheetName] = data;
 
     renderData(data, sheetName);
+    hideLoader();
   } catch (error) {
     console.error(error);
     const msg = '<p class="error-text">Failed to load data.</p>';
@@ -73,10 +103,11 @@ async function loadTabData(sheetName, containerId) {
     } else {
       container.innerHTML = msg;
     }
+    hideLoader();
   }
 }
 
-// 🎨 Render data for each tab
+// 🎨 Render data for each tab with card animations
 function renderData(data, sheetName) {
   if (!data || data.length === 0) {
     const msg = '<p class="empty-text">No data available.</p>';
@@ -97,7 +128,7 @@ function renderData(data, sheetName) {
     renderWinnerCards(reversedData);
   } else {
     const container = document.getElementById(sheetName.toLowerCase() + "-tab");
-    const html = reversedData.map(item => {
+    const html = reversedData.map((item, i) => {
       const fields = Object.entries(item).map(([key, value]) => {
         const formattedKey = formatHeader(key);
         if (typeof value === "string" && value.startsWith("http")) {
@@ -115,14 +146,14 @@ function renderData(data, sheetName) {
             <span class="card-value">${value}</span>
           </div>`;
       }).join('');
-      return `<div class="card">${fields}</div>`;
+      return `<div class="card fade-in" style="animation-delay:${i * 0.05}s">${fields}</div>`;
     }).join('');
 
     container.innerHTML = `<div class="card-container">${html}</div>`;
   }
 }
 
-// 🧮 Improved Leaderboard Calculation (handles ties properly)
+// 🧮 Leaderboard Calculation
 function calculateLeaderboard(winnersData) {
   const rankWeight = { "I": 3, "II": 2, "III": 1 };
   const table = {};
@@ -152,7 +183,6 @@ function calculateLeaderboard(winnersData) {
       return b.count - a.count;
     });
 
-  // Handle fair ties
   const finalLeaderboard = [];
   let lastCount = null, lastBest = null;
 
@@ -168,7 +198,7 @@ function calculateLeaderboard(winnersData) {
   return finalLeaderboard;
 }
 
-// 🏆 Render leaderboard with medals and tie handling
+// 🏆 Animated Leaderboard
 function renderLeaderboard(leaderboard) {
   const container = document.getElementById("leaderboard");
   if (!container) return;
@@ -196,7 +226,7 @@ function renderLeaderboard(leaderboard) {
 
     const medal = medalMap[currentRank] || "";
     html += `
-      <li class="flex justify-between bg-gray-100 p-2 rounded-lg shadow">
+      <li class="flex justify-between bg-gray-100 p-2 rounded-lg shadow fade-in" style="animation-delay:${i * 0.1}s">
         <span>${medal} ${player.name}</span>
         <span class="font-semibold">
           ${player.count} ${player.count === 1 ? "win" : "wins"} 
@@ -209,12 +239,12 @@ function renderLeaderboard(leaderboard) {
   container.innerHTML = html;
 }
 
-// 🏅 Render Winner Cards
+// 🏅 Animated Winner Cards
 function renderWinnerCards(data) {
   const container = document.getElementById("winners-list");
   if (!container) return;
 
-  const html = data.map(item => {
+  const html = data.map((item, i) => {
     const fields = Object.entries(item).map(([key, value]) => {
       const formattedKey = formatHeader(key);
       return `
@@ -224,7 +254,7 @@ function renderWinnerCards(data) {
           <span class="card-value">${value}</span>
         </div>`;
     }).join('');
-    return `<div class="card">${fields}</div>`;
+    return `<div class="card fade-in" style="animation-delay:${i * 0.05}s">${fields}</div>`;
   }).join('');
 
   container.innerHTML = `<div class="card-container">${html}</div>`;
