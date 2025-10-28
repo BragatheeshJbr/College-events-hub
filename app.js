@@ -27,9 +27,9 @@ tabs.forEach(tab => {
 
 // 🏁 Load default tab (External Events)
 window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.tab-button[data-sheet="External Events"]').classList.add('active');
+  document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
   document.getElementById('events-tab').style.display = 'block';
-  loadTabData('External Events', 'events-tab');
+  loadTabData('Events', 'events-tab');
 });
 
 // ⚡ Cache for quick re-render
