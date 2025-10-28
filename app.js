@@ -75,7 +75,7 @@ async function loadTabData(sheetName, containerId) {
 // 🎨 Render Tab Data
 function renderData(data, sheetName) {
   if (!data || data.length === 0) {
-    const msg = '<p class="empty-text">No data available.</p>';
+    const msg = '<p class="empty-text">No updates available.</p>';
     if (sheetName.includes("Winners")) {
       document.getElementById("leaderboard").innerHTML = msg;
       document.getElementById("winners-list").innerHTML = '';
