@@ -1,5 +1,5 @@
 // ✅ Google Apps Script URL (Your live Sheet connection)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbzNUWmn-tPtKM4N8LTOmbO2Y5iRHFmKZScSK6XL5BCzLI06vAfd0MXRpQ38-FXe0lvQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwth4csEGYkh4P0XgVV3-8Y4o0E2bO7P8Btku_s7VppTTSFET3gazlERdVKS9P76HkSug/exec';
 
 // 🧩 Helper to format headers
 function formatHeader(header) {
