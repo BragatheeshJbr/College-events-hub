@@ -1,11 +1,11 @@
 {
-  "name": "VEC Dashboard",
+  "name": "VEC e-Notice Board",
   "short_name": "VEC",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#003366",
-  "description": "VEC Dashboard to view Events, Winners, and Courses",
+  "description": "VEC e-Notice Board to view Events, Winners, and Courses",
   "icons": [
     {
       "src": "logo.jpg",
