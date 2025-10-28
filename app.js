@@ -35,7 +35,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // ⚡ Cache for quick re-render
 const cache = {};
 
-// 📦 Load Data
+// 📦 Load Data (UPDATED with safe sheet name encoding)
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
 
@@ -52,7 +52,12 @@ async function loadTabData(sheetName, containerId) {
       return;
     }
 
-    const response = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`);
+    // ✅ Encode sheet name to handle spaces, slashes, etc.
+    const encodedSheet = encodeURIComponent(sheetName);
+
+    // ✅ Safe fetch URL
+    const response = await fetch(`${SCRIPT_URL}?sheet=${encodedSheet}`);
+
     const data = await response.json();
     cache[sheetName] = data;
     renderData(data, sheetName);
