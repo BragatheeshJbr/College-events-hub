@@ -6,7 +6,7 @@ function formatHeader(header) {
   return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-//  🧭 Tab switching logic
+// 🧭 Tab switching logic
 const tabs = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -15,34 +15,31 @@ tabs.forEach(tab => {
     const target = tab.dataset.target;
     const sheet = tab.dataset.sheet;
 
-    // Hide all tabs
     tabContents.forEach(tc => tc.style.display = 'none');
     tabs.forEach(t => t.classList.remove('active'));
 
-    // Show active tab
     document.getElementById(target).style.display = 'block';
     tab.classList.add('active');
 
-    // Load data for the selected tab
     loadTabData(sheet, target);
   });
 });
 
-// 🏁 Load default tab (Events) on startup
+// 🏁 Load default tab (External Events)
 window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.tab-button[data-sheet="Events"]').classList.add('active');
+  document.querySelector('.tab-button[data-sheet="External Events"]').classList.add('active');
   document.getElementById('events-tab').style.display = 'block';
-  loadTabData('Events', 'events-tab');
+  loadTabData('External Events', 'events-tab');
 });
 
-// ⚡ Data cache for performance
+// ⚡ Cache for quick re-render
 const cache = {};
 
-// 📦 Load data dynamically
+// 📦 Load Data
 async function loadTabData(sheetName, containerId) {
   const container = document.getElementById(containerId);
 
-  if (sheetName === "Winners") {
+  if (sheetName.includes("Winners")) {
     document.getElementById("leaderboard").innerHTML = '<p class="loading-text">Loading...</p>';
     document.getElementById("winners-list").innerHTML = '';
   } else {
@@ -55,15 +52,14 @@ async function loadTabData(sheetName, containerId) {
       return;
     }
 
-    const response = await fetch(`${SCRIPT_URL}?sheet=${sheetName}`);
+    const response = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`);
     const data = await response.json();
     cache[sheetName] = data;
-
     renderData(data, sheetName);
   } catch (error) {
     console.error(error);
     const msg = '<p class="error-text">Failed to load data.</p>';
-    if (sheetName === "Winners") {
+    if (sheetName.includes("Winners")) {
       document.getElementById("leaderboard").innerHTML = msg;
     } else {
       container.innerHTML = msg;
@@ -71,27 +67,27 @@ async function loadTabData(sheetName, containerId) {
   }
 }
 
-// 🎨 Render data for each tab
+// 🎨 Render Tab Data
 function renderData(data, sheetName) {
   if (!data || data.length === 0) {
     const msg = '<p class="empty-text">No data available.</p>';
-    if (sheetName === "Winners") {
+    if (sheetName.includes("Winners")) {
       document.getElementById("leaderboard").innerHTML = msg;
       document.getElementById("winners-list").innerHTML = '';
     } else {
-      document.getElementById(sheetName.toLowerCase() + "-tab").innerHTML = msg;
+      document.getElementById(sheetName.toLowerCase().replace(/ /g, '-') + "-tab").innerHTML = msg;
     }
     return;
   }
 
   const reversedData = [...data].reverse();
 
-  if (sheetName === "Winners") {
+  if (sheetName.includes("Winners")) {
     const leaderboard = calculateLeaderboard(reversedData);
     renderLeaderboard(leaderboard);
     renderWinnerCards(reversedData);
   } else {
-    const container = document.getElementById(sheetName.toLowerCase() + "-tab");
+    const container = document.getElementById(sheetName.toLowerCase().replace(/ /g, '-') + "-tab");
     const html = reversedData.map(item => {
       const fields = Object.entries(item).map(([key, value]) => {
         const formattedKey = formatHeader(key);
@@ -117,12 +113,11 @@ function renderData(data, sheetName) {
   }
 }
 
-// 🧮 Leaderboard Logic (Wins → Total Points → Best Position → Tie)
+// 🧮 Leaderboard Logic
 function calculateLeaderboard(winnersData) {
   const rankWeight = { "I": 3, "II": 2, "III": 1 };
   const table = {};
 
-  // 🏗️ Build player stats
   winnersData.forEach(entry => {
     const names = entry["Winners Name"]?.split(",").map(n => n.trim());
     const pos = entry["Position"];
@@ -140,7 +135,6 @@ function calculateLeaderboard(winnersData) {
     }
   });
 
-  // Convert to sortable array
   const leaderboard = Object.entries(table).map(([name, stats]) => ({
     name,
     wins: stats.wins,
@@ -148,7 +142,6 @@ function calculateLeaderboard(winnersData) {
     best: Math.max(...stats.bestPositions)
   }));
 
-  // Sort by wins → totalPoints → best → name
   leaderboard.sort((a, b) => {
     if (b.wins !== a.wins) return b.wins - a.wins;
     if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
@@ -156,19 +149,17 @@ function calculateLeaderboard(winnersData) {
     return a.name.localeCompare(b.name);
   });
 
-  // 🏁 Assign ranks & handle ties (same medal for tie)
   const final = [];
   let prev = null;
   let rank = 1;
 
-  leaderboard.forEach((player, i) => {
+  leaderboard.forEach((player) => {
     if (
       prev &&
       player.wins === prev.wins &&
       player.totalPoints === prev.totalPoints &&
       player.best === prev.best
     ) {
-      // Tie → same rank
       player.rank = prev.rank;
     } else {
       player.rank = rank;
@@ -178,12 +169,10 @@ function calculateLeaderboard(winnersData) {
     rank++;
   });
 
-  // Keep top 3 ranks (including ties)
-  const topRank = final.filter(p => p.rank <= 3);
-  return topRank;
+  return final.filter(p => p.rank <= 3);
 }
 
-// 🏆 Render leaderboard
+// 🏆 Render Leaderboard
 function renderLeaderboard(leaderboard) {
   const container = document.getElementById("leaderboard");
   if (!container) return;
@@ -193,28 +182,17 @@ function renderLeaderboard(leaderboard) {
     return;
   }
 
-  const medals = {
-    1: "🥇",
-    2: "🥈",
-    3: "🥉"
-  };
+  const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
   let html = `<h3 class="text-xl font-bold mb-2">🏆 VEC Champions Leaderboard</h3><ul class="space-y-2">`;
 
   leaderboard.forEach(player => {
     const medal = medals[player.rank] || "🏅";
-    const bestRoman =
-      player.best === 3 ? "I" :
-      player.best === 2 ? "II" :
-      player.best === 1 ? "III" : "-";
-
+    const bestRoman = player.best === 3 ? "I" : player.best === 2 ? "II" : player.best === 1 ? "III" : "-";
     html += `
       <li class="flex justify-between items-center bg-gray-100 p-2 rounded-lg shadow">
         <span style="font-weight:bold;">${medal} ${player.name}</span>
-        <span class="font-semibold text-gray-800">
-          ${player.wins} ${player.wins === 1 ? "win" : "wins"} 
-          (Best: ${bestRoman} Place)
-        </span>
+        <span class="font-semibold text-gray-800">${player.wins} wins (Best: ${bestRoman} Place)</span>
       </li>`;
   });
 
@@ -228,24 +206,22 @@ function renderWinnerCards(data) {
   if (!container) return;
 
   const html = data.map(item => {
-    const fields = Object.entries(item).map(([key, value]) => {
-      const formattedKey = formatHeader(key);
-      return `
-        <div class="card-field">
-          <span class="card-key">${formattedKey}</span>
-          <span class="card-colon">:</span>
-          <span class="card-value">${value}</span>
-        </div>`;
-    }).join('');
+    const fields = Object.entries(item).map(([key, value]) => `
+      <div class="card-field">
+        <span class="card-key">${formatHeader(key)}</span>
+        <span class="card-colon">:</span>
+        <span class="card-value">${value}</span>
+      </div>
+    `).join('');
     return `<div class="card">${fields}</div>`;
   }).join('');
 
   container.innerHTML = `<div class="card-container">${html}</div>`;
 }
 
-// ⚙️ Service Worker Registration
+// ⚙️ Register Service Worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
-    .then(reg => console.log("✅ Service Worker registered:", reg))
-    .catch(err => console.error("❌ Service Worker registration failed:", err));
+    .then(reg => console.log("✅ Service Worker registered"))
+    .catch(err => console.error("❌ SW registration failed", err));
 }

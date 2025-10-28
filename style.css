@@ -37,20 +37,22 @@ body {
 /* Tabs Navigation */
 .tabs {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   background: #ffffff;
   border-bottom: 1px solid #ddd;
-  overflow-x: auto; /* Scrollable on small screens */
+  overflow-x: auto;           /* allows horizontal scroll */
+  scroll-behavior: smooth;
+  white-space: nowrap;
 }
 
 .tab-button {
-  flex: 1;
-  min-width: 100px; /* Prevent squished buttons on mobile */
+  flex: 0 0 auto;             /* prevents auto resize */
+  min-width: 140px;           /* ensures visible space for 5 tabs */
   padding: 12px;
   border: none;
   background: #f4f6f8;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   transition: background 0.3s;
 }
 

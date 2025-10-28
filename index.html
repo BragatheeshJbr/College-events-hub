@@ -10,7 +10,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
   <link rel="apple-touch-icon" href="logo-192.png">
   <meta name="theme-color" content="#003366">
-  <!-- iOS specific (makes Add to Home Screen nicer on iPhone) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="VEC Dashboard">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -20,7 +19,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-78QH3JK7NK');  
+    gtag('config', 'G-78QH3JK7NK');
   </script>
 </head>
 <body>
@@ -34,33 +33,36 @@
   <div class="welcome-box" id="welcomeBox">
     <button class="close-btn" onclick="document.getElementById('welcomeBox').style.display='none'">×</button>
     <p>
-      This dashboard helps you to view 
-      <strong>External Events List</strong>, 
-      <strong>Past Winners</strong> from our college students, 
-      and <strong>Value Added Course List</strong>.
+      This dashboard helps you to view
+      <strong>External Events</strong>,
+      <strong>AIMA / MMA Activities</strong>,
+      <strong>Latest Updates</strong>,
+      <strong>Winners</strong> from our college students,
+      and <strong>Value Added Courses</strong>.
     </p>
   </div>
 
   <!-- Tabs Navigation -->
   <nav class="tabs">
-    <button class="tab-button active" data-target="events-tab" data-sheet="Events">Events</button>
-    <button class="tab-button" data-target="courses-tab" data-sheet="Courses">Courses</button>
-    <button class="tab-button" data-target="winners-tab" data-sheet="Winners">Winners</button>
+    <button class="tab-button active" data-target="events-tab" data-sheet="External Events">External Events</button>
+    <button class="tab-button" data-target="aima-tab" data-sheet="AIMA/MMA">AIMA / MMA</button>
+    <button class="tab-button" data-target="updates-tab" data-sheet="Updates">Updates</button>
+    <button class="tab-button" data-target="winners-tab" data-sheet="Winners of External Events">Winners</button>
+    <button class="tab-button" data-target="vac-tab" data-sheet="VAC">VAC</button>
   </nav>
 
   <!-- Tab Contents -->
   <main class="tab-container">
     <section id="events-tab" class="tab-content" style="display:block;"></section>
-    <section id="courses-tab" class="tab-content" style="display:none;"></section>
-    
-    <!-- Winners Tab -->
-    <section id="winners-tab" class="tab-content" style="display:none;">
-      <!-- Leaderboard section -->
-      <div id="leaderboard" class="leaderboard-box"></div>
+    <section id="aima-tab" class="tab-content" style="display:none;"></section>
+    <section id="updates-tab" class="tab-content" style="display:none;"></section>
 
-      <!-- Winners list will appear here (cards rendered dynamically) -->
+    <section id="winners-tab" class="tab-content" style="display:none;">
+      <div id="leaderboard" class="leaderboard-box"></div>
       <div id="winners-list"></div>
     </section>
+
+    <section id="vac-tab" class="tab-content" style="display:none;"></section>
   </main>
 
   <!-- Footer -->
